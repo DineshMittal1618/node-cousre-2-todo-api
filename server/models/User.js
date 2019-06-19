@@ -1,9 +1,9 @@
 var mongoose=require('mongoose');
 
-var User=mongoose.model('User',{
+var users=mongoose.model('users',{
   email:{type:String,minlength:1,trim:true}
 });
 
 
 
-module.exports={User};
+module.exports={users};
