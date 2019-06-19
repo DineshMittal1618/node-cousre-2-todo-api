@@ -29,6 +29,11 @@ app.post('/user',(req,res)=>{
   todo.save().then((doc)=>{res.send(doc);},(e)=>{res.send(e);})
 })
 
+
+app.get('/todos',(req,res)=>{
+  Todo.find().then((doc)=>{res.send(doc);},(e)=>{res.send(e);})
+})
+
 app.listen(3000,()=>{
   console.log('Ready to listen on port 3000');
 });
