@@ -1,3 +1,4 @@
+const _=require('lodash');
 var express=require('express');
 var bodyParser=require('body-parser');
 
@@ -7,9 +8,13 @@ var {users}=require('./models/User');
 var {ObjectID}=require('mongodb');
 var app=express();
 
+const port=process.env.PORT || 3000;
+
 app.use(bodyParser.json());
 
 app.post('/todos',(req,res)=>{
+
+
 
 var todo=new Todo({
   text:req.body.text
@@ -20,20 +25,37 @@ todo.save().then((doc)=>{res.send(doc);},(e)=>{res.status(400).send(e);})
 })
 
 
+// app.post('/user',(req,res)=>{
+//
+//   var todo=new Todo({
+//     text:req.body.text
+//   })
+//
+//   todo.save().then((doc)=>{res.send(doc);},(e)=>{res.send(e);})
+// });
+//
+//
+// app.get('/todos',(req,res)=>{
+//   Todo.find().then((doc)=>{res.send(doc);},(e)=>{res.send(e);})
+// });
+
 app.post('/user',(req,res)=>{
+var body=_.pick(req.body,['email','password']);
 
-  var todo=new Todo({
-    text:req.body.text
-  })
+ var user=new users(body);
 
-  todo.save().then((doc)=>{res.send(doc);},(e)=>{res.send(e);})
+user.save().then(
+  ()=>{
+    return user.generateAuthToken();
+  }).then((token)=>{
+    console.log('123');
+    res.header('x-auth',token).send(user);
+  }).
+  catch((e)=>{
+    console.log('b');
+    res.status(400).send(e);})
+
 });
-
-
-app.get('/todos',(req,res)=>{
-  Todo.find().then((doc)=>{res.send(doc);},(e)=>{res.send(e);})
-});
-
 
 app.get('/todos/:id',(req,res)=>{
   var id=req.params.id;
@@ -54,8 +76,42 @@ app.get('/todos/:id',(req,res)=>{
 
 });
 
-app.listen(3000,()=>{
-  console.log('Ready to listen on port 3000');
+
+
+app.patch('/todos/:id',(req,res)=>{
+  var id=req.params.id;
+  var body=_.pick(req.body,['text','completed']);
+
+  if(!ObjectID.isValid(id))
+  {
+    console.log('invalid id');
+    res.status(400).send();
+  }
+
+  if(_.isBoolean(body.completed) && body.completed)
+  {
+    body.completedAt=new Date().getTime();
+  }
+  else{
+    body.completed=false;
+    body.completedAt=null;
+  }
+
+
+  Todo.findByIdAndUpdate(id,{$set:body},{new:true}).then((todo)=>{
+    id(!todo)
+    {
+      console.log('a');
+      return res.status(400).send();
+    }
+    res.send(todo);
+  }).catch((e)=>{
+    console.log('b');
+    res.status(400).send();})
+});
+
+app.listen(port,()=>{
+  console.log(`Ready to listen on port ${port}`);
 });
 
 
