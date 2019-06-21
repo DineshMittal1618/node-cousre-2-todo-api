@@ -2,11 +2,15 @@ const _=require('lodash');
 var express=require('express');
 var bodyParser=require('body-parser');
 
+
+
 var {mongoose}=require('./db/mongoose');
 var {Todo}=require('./models/Todo');
 var {users}=require('./models/User');
 var {ObjectID}=require('mongodb');
 var app=express();
+
+var {authenticate}=require('./middleware/authenticate');
 
 const port=process.env.PORT || 3000;
 
@@ -108,6 +112,11 @@ app.patch('/todos/:id',(req,res)=>{
   }).catch((e)=>{
     console.log('b');
     res.status(400).send();})
+});
+
+
+app.get('/users/me',authenticate,(req,res)=>{
+ res.send(req.user);
 });
 
 app.listen(port,()=>{
